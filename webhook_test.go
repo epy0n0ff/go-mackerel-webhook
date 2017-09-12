@@ -60,7 +60,7 @@ func TestUnmarshal(t *testing.T) {
 	}
 }
 
-func TestMarshalNumber(t *testing.T) {
+func TestUnmarshalNumber(t *testing.T) {
 	rawJson := `
 {
 	"orgName": "TestOrg",
@@ -112,9 +112,15 @@ func TestMarshalNumber(t *testing.T) {
 	if 20 != *hook.Alert.CriticalThreshold.AsInt64 {
 		t.Fatalf("unexpected error: criticalThreshold: 20 != %d", *hook.Alert.CriticalThreshold.AsInt64)
 	}
+	if hook.Alert.CriticalThreshold.AsFloat64 != nil {
+		t.Fatalf("unexpected error: CriticalThreshold.AsFloat64 must be null")
+	}
 
 	if 1.4665636369580741 != *hook.Alert.WarningThreshold.AsFloat64 {
 		t.Fatalf("unexpected error: warningThreshold: 1.4665636369580741 != %f", *hook.Alert.WarningThreshold.AsFloat64)
+	}
+	if hook.Alert.WarningThreshold.AsInt64 != nil {
+		t.Fatalf("unexpected error: WarningThreshold.AsInt64 must be null")
 	}
 
 }

@@ -1,8 +1,9 @@
 package webhook
 
 import (
+	"bytes"
 	"encoding/binary"
-	"math"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -49,27 +50,35 @@ type Alert struct {
 }
 
 type Number struct {
-	AsInt64   *int64
-	AsFloat64 *float64
+	asInt64   *int64
+	asFloat64 *float64
 }
 
 func NewInt64AsNumber(i int64) *Number {
-	return &Number{AsInt64: &i, AsFloat64: nil}
+	return &Number{asInt64: &i, asFloat64: nil}
 }
 
 func NewFloat64AsNumber(f float64) *Number {
-	return &Number{AsInt64: nil, AsFloat64: &f}
+	return &Number{asInt64: nil, asFloat64: &f}
+}
+
+func (t *Number) AsInt64() *int64 {
+	return t.asInt64
+}
+
+func (t *Number) AsFloat64() *float64 {
+	return t.asFloat64
 }
 
 func (t *Number) MarshalJSON() ([]byte, error) {
-	u := make([]byte, 0, 8)
-	if t.AsFloat64 != nil {
-		binary.LittleEndian.PutUint64(u, math.Float64bits(*t.AsFloat64))
-	} else if t.AsInt64 != nil {
-		binary.LittleEndian.PutUint64(u, uint64(*t.AsInt64))
+	var buf bytes.Buffer
+	if t.asFloat64 != nil {
+		fmt.Fprintf(&buf, `%f`, *t.asFloat64)
+	} else if t.asInt64 != nil {
+		fmt.Fprintf(&buf, `%d`, *t.asInt64)
 	}
 
-	return u, nil
+	return buf.Bytes(), nil
 }
 
 func (t *Number) UnmarshalJSON(data []byte) error {
@@ -83,15 +92,15 @@ func (t *Number) UnmarshalJSON(data []byte) error {
 		if err != nil {
 			return err
 		}
-		t.AsFloat64 = &f
-		t.AsInt64 = nil
+		t.asFloat64 = &f
+		t.asInt64 = nil
 	} else {
 		i, err := strconv.ParseInt(rawNumber, 10, 64)
 		if err != nil {
 			return err
 		}
-		t.AsInt64 = &i
-		t.AsFloat64 = nil
+		t.asInt64 = &i
+		t.asFloat64 = nil
 	}
 	return err
 }

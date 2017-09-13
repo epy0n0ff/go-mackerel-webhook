@@ -109,18 +109,49 @@ func TestUnmarshalNumber(t *testing.T) {
 		t.Fatalf("unexpected error:%v", err)
 	}
 
-	if 20 != *hook.Alert.CriticalThreshold.AsInt64 {
-		t.Fatalf("unexpected error: criticalThreshold: 20 != %d", *hook.Alert.CriticalThreshold.AsInt64)
+	if 20 != *hook.Alert.CriticalThreshold.AsInt64() {
+		t.Fatalf("unexpected error: criticalThreshold: 20 != %d", *hook.Alert.CriticalThreshold.AsInt64())
 	}
-	if hook.Alert.CriticalThreshold.AsFloat64 != nil {
+	if hook.Alert.CriticalThreshold.AsFloat64() != nil {
 		t.Fatalf("unexpected error: CriticalThreshold.AsFloat64 must be null")
 	}
 
-	if 1.4665636369580741 != *hook.Alert.WarningThreshold.AsFloat64 {
-		t.Fatalf("unexpected error: warningThreshold: 1.4665636369580741 != %f", *hook.Alert.WarningThreshold.AsFloat64)
+	if 1.4665636369580741 != *hook.Alert.WarningThreshold.AsFloat64() {
+		t.Fatalf("unexpected error: warningThreshold: 1.4665636369580741 != %f", *hook.Alert.WarningThreshold.AsFloat64())
 	}
-	if hook.Alert.WarningThreshold.AsInt64 != nil {
+	if hook.Alert.WarningThreshold.AsInt64() != nil {
 		t.Fatalf("unexpected error: WarningThreshold.AsInt64 must be null")
 	}
+}
 
+func TestMarshalNumber(t *testing.T) {
+	asInt := struct {
+		AsInt64 Number `json:"as_int_64"`
+		hoge    string
+	}{
+		*NewInt64AsNumber(20),
+		"aa",
+	}
+
+	asFloat := struct {
+		AsFloat64 Number `json:"as_float_64"`
+	}{
+		*NewFloat64AsNumber(1.4665636369580741),
+	}
+
+	b, err := json.Marshal(&asInt)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if string(b) != `{"as_int_64":20}` {
+		t.Fatalf(`unexpected error: asInt64 marshal result  {"as_int_64":20} != %s`, string(b))
+	}
+
+	b, err = json.Marshal(&asFloat)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if string(b) != `{"as_float_64":1.466564}` {
+		t.Fatalf(`unexpected error: asFloat64 marshal result  {"as_float_64":1.466564} != %s`, string(b))
+	}
 }
